@@ -1,10 +1,11 @@
-#Code pulled from scrapehero at https://gist.github.com/scrapehero/5f51f344d68cf2c022eb2d23a2f1cf95
+#Code to scrape pulled from scrapehero at https://gist.github.com/scrapehero/5f51f344d68cf2c022eb2d23a2f1cf95
+#The excel sheet we will use was created by Jarod Jones, and can be used to check profitability of rental properties
 from lxml import html
 import requests
 import unicodecsv as csv
 import argparse
 import json
-
+from urllib.request import Request, urlopen
 
 def clean(text):
     if text:
@@ -119,8 +120,12 @@ def parse(zipcode, filter=None):
     if not response:
         print("Failed to fetch the page, please check `response.html` to see the response received from zillow.com.")
         return None
+    
+    req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+    webpage = urlopen(req).read()
 
-    parser = html.fromstring(response.text)
+    #parser = html.fromstring(response.text)
+    parser = html.fromstring(webpage)
     search_results = parser.xpath("//div[@id='search-results']//article")
 
     if not search_results:
