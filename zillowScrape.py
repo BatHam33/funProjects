@@ -6,11 +6,22 @@ import unicodecsv as csv
 import argparse
 import json
 from urllib.request import Request, urlopen
+import openpyxl as xl
+import io
 
 def clean(text):
     if text:
         return ' '.join(' '.join(text).split())
     return None
+
+def runNumbers(purchaseprice, downpaymentPercent, interestRate, lengthofmortgage, address):
+    realestatefile = xl.load_workbook('realEstateCostEval.xlsx')
+    sheet = realestatefile.get_sheet_by_name('Sheet1')
+    sheet['C5'] = purchaseprice
+    sheet['C6'] = downpaymentPercent
+    sheet['C7'] = interestRate
+    sheet['C8'] = lengthofmortgage
+    realestatefile.save(address+'_costEval.xlsx')
 
 
 def get_headers():
@@ -28,7 +39,7 @@ def create_url(zipcode, filter):
     # Creating Zillow URL based on the filter.
 
     if filter == "newest":
-        url = "https://www.zillow.com/homes/for_sale/{0}/0_singlestory/days_sort".format(zipcode)
+        url = "https://www.zillow.com/homes/{0}/0_singlestory/days_sort".format(zipcode)
     elif filter == "cheapest":
         url = "https://www.zillow.com/homes/for_sale/{0}/0_singlestory/pricea_sort/".format(zipcode)
     else:
@@ -40,7 +51,8 @@ def create_url(zipcode, filter):
 def save_to_file(response):
     # saving response to `response.html`
 
-    with open("response.html", 'w') as fp:
+    #with open("response.html", 'w') as fp:
+    with io.open("response.html", 'w', encoding="utf-8") as fp:
         fp.write(response.text)
 
 
@@ -78,10 +90,11 @@ def get_data_from_json(raw_json_data):
 
     try:
         json_data = json.loads(cleaned_data)
-        search_results = json_data.get('searchResults').get('listResults', [])
+        #search_results = json_data.get('searchResults').get('listResults', [])
+        search_results = json_data.get('cat1').get('searchResults').get('listResults', [])
 
         for properties in search_results:
-            address = properties.get('addressWithZip')
+            address = properties.get('address')
             property_info = properties.get('hdpData', {}).get('homeInfo')
             city = property_info.get('city')
             state = property_info.get('state')
