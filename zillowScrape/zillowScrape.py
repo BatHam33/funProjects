@@ -11,6 +11,7 @@ import io
 import os
 from bs4 import BeautifulSoup
 import html5lib
+import nums_from_string 
 
 def clean(text):
     if text:
@@ -21,8 +22,9 @@ def getRents(zipcode, bedrooms):
     query = "https://myrentrates.com/rental_analysis?rent=3000&zip="+ str(zipcode)+"&bedroom="+str(bedrooms)
     website = requests.get(query)
     soup = BeautifulSoup(website.content, 'html5lib')
-    result = soup.center.section.div.div.div.div.next_sibling.next_sibling.next_sibling.contents
-    return result
+    string = str(soup.center.section.div.div.div.div.next_sibling.next_sibling.next_sibling.contents)
+    result = nums_from_string.get_nums(string)
+    return result[0]
 
     
 #this will run the numbers based on property specific details. The excel sheet should be edited to include the specifics
