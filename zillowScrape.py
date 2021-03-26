@@ -10,6 +10,7 @@ import openpyxl as xl
 import io
 import os
 from bs4 import BeautifulSoup
+import html5lib
 
 def clean(text):
     if text:
@@ -19,7 +20,9 @@ def clean(text):
 def getRents(zipcode, bedrooms):
     query = "https://myrentrates.com/rental_analysis?rent=3000&zip="+ str(zipcode)+"&bedroom="+str(bedrooms)
     website = requests.get(query)
-    soup = BeautifulSoup(website.content, 'html.parser')
+    soup = BeautifulSoup(website.content, 'html5lib')
+    result = soup.center.section.div.div.div.div.next_sibling.next_sibling.next_sibling.contents
+    return result
 
     
 #this will run the numbers based on property specific details. The excel sheet should be edited to include the specifics
