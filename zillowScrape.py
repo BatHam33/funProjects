@@ -8,20 +8,43 @@ import json
 from urllib.request import Request, urlopen
 import openpyxl as xl
 import io
+import os
+from bs4 import BeautifulSoup
 
 def clean(text):
     if text:
         return ' '.join(' '.join(text).split())
     return None
 
-def runNumbers(purchaseprice, downpaymentPercent, interestRate, lengthofmortgage, address):
+def getRents(zipcode, bedrooms):
+    query = "https://myrentrates.com/rental_analysis?rent=3000&zip="+ str(zipcode)+"&bedroom="+str(bedrooms)
+    website = requests.get(query)
+    soup = BeautifulSoup(website.content, 'html.parser')
+
+    
+#this will run the numbers based on property specific details. The excel sheet should be edited to include the specifics
+#of your individual market
+def runNumbers(purchaseprice, downpaymentPercent, interestRate, lengthofmortgage, address, zipcode):
     realestatefile = xl.load_workbook('realEstateCostEval.xlsx')
     sheet = realestatefile.get_sheet_by_name('Sheet1')
     sheet['C5'] = purchaseprice
     sheet['C6'] = downpaymentPercent
     sheet['C7'] = interestRate
     sheet['C8'] = lengthofmortgage
-    realestatefile.save(address+'_costEval.xlsx')
+    if sheet['B35'] > 0:
+        fullfile = str(zipcode) + "/good/" + address + "_costEval.xlsx"
+        realestatefile.save(fullfile)
+    else:
+        fullfile = str(zipcode) + "/bad/" + address + "_costEval.xlsx"
+        realestatefile.save(fullfile)
+
+
+def makeDirectories(zipcode):
+    address = str(zipcode) + "/good"
+    os.makedirs(address)
+    address = str(zipcode) + "/bad"
+    os.makedirs(address)
+    return None
 
 
 def get_headers():
