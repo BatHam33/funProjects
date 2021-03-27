@@ -18,6 +18,7 @@ def clean(text):
         return ' '.join(' '.join(text).split())
     return None
 
+#this function takes a zipcode and a number of bedrooms, then finds the average rent and returns that value
 def getRents(zipcode, bedrooms):
     query = "https://myrentrates.com/rental_analysis?rent=3000&zip="+ str(zipcode)+"&bedroom="+str(bedrooms)
     website = requests.get(query)
@@ -29,13 +30,14 @@ def getRents(zipcode, bedrooms):
     
 #this will run the numbers based on property specific details. The excel sheet should be edited to include the specifics
 #of your individual market
-def runNumbers(purchaseprice, downpaymentPercent, interestRate, lengthofmortgage, address, zipcode):
+def runNumbers(purchaseprice, downpaymentPercent, interestRate, lengthofmortgage, address, zipcode, bedrooms):
     realestatefile = xl.load_workbook('realEstateCostEval.xlsx')
     sheet = realestatefile.get_sheet_by_name('Sheet1')
     sheet['C5'] = purchaseprice
     sheet['C6'] = downpaymentPercent
     sheet['C7'] = interestRate
     sheet['C8'] = lengthofmortgage
+    sheet['C23'] = getRents(zipcode, bedrooms) 
     if sheet['B35'] > 0:
         fullfile = str(zipcode) + "/good/" + address + "_costEval.xlsx"
         realestatefile.save(fullfile)
@@ -43,7 +45,7 @@ def runNumbers(purchaseprice, downpaymentPercent, interestRate, lengthofmortgage
         fullfile = str(zipcode) + "/bad/" + address + "_costEval.xlsx"
         realestatefile.save(fullfile)
 
-
+#function to make directories to store the files in
 def makeDirectories(zipcode):
     address = str(zipcode) + "/good"
     os.makedirs(address)
