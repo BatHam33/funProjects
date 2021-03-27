@@ -37,7 +37,7 @@ def runNumbers(purchaseprice, downpaymentPercent, interestRate, lengthofmortgage
     sheet['C6'] = downpaymentPercent
     sheet['C7'] = interestRate
     sheet['C8'] = lengthofmortgage
-    sheet['C23'] = getRents(zipcode, bedrooms)
+    sheet['C23'] = getRents(zipcode, bedrooms) 
     if sheet['B35'] > 0:
         fullfile = str(zipcode) + "/good/" + address + "_costEval.xlsx"
         realestatefile.save(fullfile)
