@@ -30,28 +30,35 @@ def getRents(zipcode, bedrooms):
     
 #this will run the numbers based on property specific details. The excel sheet should be edited to include the specifics
 #of your individual market
-def runNumbers(purchaseprice, downpaymentPercent, interestRate, lengthofmortgage, address, zipcode, bedrooms):
+def runNumbers(purchaseprice, address, zipcode, bedrooms):
     realestatefile = xl.load_workbook('realEstateCostEval.xlsx')
     sheet = realestatefile.get_sheet_by_name('Sheet1')
     sheet['C5'] = purchaseprice
-    sheet['C6'] = downpaymentPercent
-    sheet['C7'] = interestRate
-    sheet['C8'] = lengthofmortgage
     sheet['C23'] = getRents(zipcode, bedrooms) 
-    if sheet['B35'] > 0:
-        fullfile = str(zipcode) + "/good/" + address + "_costEval.xlsx"
-        realestatefile.save(fullfile)
-    else:
-        fullfile = str(zipcode) + "/bad/" + address + "_costEval.xlsx"
-        realestatefile.save(fullfile)
+    fullfile = str(zipcode) + "/" + address + "_costEval.xlsx"
+    realestatefile.save(fullfile)
+
+#I would like to make this code work, but it's hard to get the resulting value from a cell that 
+#that contains an expression. I will continue to tinker with this code
+
+#    if int(sheet['B35'].value) > 0:
+#        fullfile = str(zipcode) + "/good/" + address + "_costEval.xlsx"
+#        realestatefile.save(fullfile)
+#    else:
+#        fullfile = str(zipcode) + "/bad/" + address + "_costEval.xlsx"
+#        realestatefile.save(fullfile)
 
 #function to make directories to store the files in
 def makeDirectories(zipcode):
-    address = str(zipcode) + "/good"
-    os.makedirs(address)
-    address = str(zipcode) + "/bad"
-    os.makedirs(address)
-    return None
+    os.makedirs(str(zipcode))
+
+#Code commented for same reasons as above sections
+
+#    address = str(zipcode) + "/good"
+#    os.makedirs(address)
+#    address = str(zipcode) + "/bad"
+#    os.makedirs(address)
+#    return None
 
 
 def get_headers():
@@ -112,7 +119,7 @@ def get_response(url):
             return response
     return None
 
-def get_data_from_json(raw_json_data):
+def get_data_from_json(raw_json_data, zipcode):
     # getting data from json (type 2 of their A/B testing page)
 
     cleaned_data = clean(raw_json_data).replace('<!--', "").replace("-->", "")
@@ -122,6 +129,7 @@ def get_data_from_json(raw_json_data):
         json_data = json.loads(cleaned_data)
         #search_results = json_data.get('searchResults').get('listResults', [])
         search_results = json_data.get('cat1').get('searchResults').get('listResults', [])
+        makeDirectories(zipcode)
 
         for properties in search_results:
             address = properties.get('address')
@@ -137,6 +145,7 @@ def get_data_from_json(raw_json_data):
             broker = properties.get('brokerName')
             property_url = properties.get('detailUrl')
             title = properties.get('statusText')
+            runNumbers(price, address, postal_code, bedrooms)
 
             data = {'address': address,
                     'city': city,
@@ -175,7 +184,7 @@ def parse(zipcode, filter=None):
         print("parsing from json data")
         # identified as type 2 page
         raw_json_data = parser.xpath('//script[@data-zrr-shared-data-key="mobileSearchPageStore"]//text()')
-        return get_data_from_json(raw_json_data)
+        return get_data_from_json(raw_json_data, zipcode)
 
     print("parsing from html page")
     properties_list = []
